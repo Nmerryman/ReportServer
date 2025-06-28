@@ -68,6 +68,3 @@ Or for more ease, just `docker compose up -d`
 - The default access code is `20`. Change `true_access_code` in the code for better security.
 - File and project names are sanitized for safety.
 
-## License
-
-MIT License (add your own license if needed).
