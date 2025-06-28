@@ -1,6 +1,6 @@
 FROM python:3.11-slim
 
-RUN pip install --upgrade pip && pip install --no-cache-dir fastapi uvicorn watchfiles
+RUN pip install --upgrade pip && pip install --no-cache-dir fastapi uvicorn watchfiles python-multipart
 
 WORKDIR /app
 
