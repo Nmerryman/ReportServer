@@ -6,6 +6,7 @@ import datetime
 
 app = FastAPI()
 true_access_code = "20"
+pinned_files = {}
 
 @app.get("/")
 async def read_root():
@@ -64,9 +65,11 @@ async def view_project(project_name: str):
     def gen_line(file: str):
         link_part = f'<a href="/download/{safe_project_name}/{file}">{file}</a>'
         # script_part = f"() => window.location.href = '/download/{safe_project_name}/{file}'"
-        script_part = f"fetch('/delete/{safe_project_name}/{file}/{true_access_code}').then(() => window.location.reload())"
-        button_part = f'<button onClick="{script_part}">Delete</button>'
-        return f'<li>{link_part}{button_part}</li>'
+        delete_script = f"fetch('/delete/{safe_project_name}/{file}/{true_access_code}', {{ method: 'POST' }}).then(() => window.location.reload())"
+        delete_button = f'<button onClick="{delete_script}">Delete</button>'
+        pin_script = f"fetch('/pin_file/{safe_project_name}/{file}/{true_access_code}', {{ method: 'POST' }}).then(() => window.location.reload())"
+        pin_button = f'<button onClick="{pin_script}">Pin</button>'
+        return f'<li>{link_part}{delete_button}{pin_button}</li>'
 
     safe_project_name = sanatize_path(project_name)
     if os.path.isdir(safe_project_name):
@@ -105,7 +108,8 @@ async def download_file(project_name: str, file_name: str):
         return {"message": "File not found"}
 
 
-@app.get("/delete/{project_name}/{file_name}/{access_code}")
+# I don't like this inconsistency here
+@app.post("/delete/{project_name}/{file_name}/{access_code}")
 async def delete_project(project_name: str, file_name: str, access_code: str):
     if access_code == true_access_code:
         safe_project_name = sanatize_path(project_name)
@@ -118,3 +122,26 @@ async def delete_project(project_name: str, file_name: str, access_code: str):
         else:
             return gen_resp_message("File not found")
 
+
+@app.post("/pin_file/{project_name}/{file_name}/{access_code}")
+async def pin_file(project_name: str, file_name: str, access_code: str):
+    if access_code == true_access_code:
+        safe_project_name = sanatize_path(project_name)
+        safe_file_name = sanatize_path(file_name)
+        file_path = os.path.join(safe_project_name, safe_file_name)
+
+        if os.path.isfile(file_path):
+            pinned_files[project_name] = file_path
+            return gen_resp_message("File pinned successfully")
+        else:
+            return gen_resp_message("File not found")
+    else:
+        return gen_resp_message("error")
+
+
+@app.get("/pinned_file/{project_name}")
+async def get_pinned_file(project_name: str):
+    if project_name in pinned_files and os.path.isfile(pinned_files[project_name]):
+        return FileResponse(pinned_files[project_name], media_type='application/octet-stream', filename=os.path.basename(pinned_files[project_name]))
+    else:
+        return {"message": "No pinned file found"}

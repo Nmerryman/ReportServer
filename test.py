@@ -1,7 +1,8 @@
 import requests
 import json
 
-base_url = "http://localhost:8000"
+base_url = "http://localhost:5905"
+# base_url = "https://reports.hydris.dev"
 
 def get_page():
     r = requests.get(base_url)
