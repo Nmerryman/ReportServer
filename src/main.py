@@ -74,6 +74,7 @@ async def view_project(project_name: str):
     safe_project_name = sanatize_path(project_name)
     if os.path.isdir(safe_project_name):
         files = os.listdir(safe_project_name)
+        files.sort()
         
         return HTMLResponse(
             content=f"""
