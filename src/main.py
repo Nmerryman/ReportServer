@@ -69,6 +69,9 @@ async def view_project(project_name: str):
         delete_button = f'<button onClick="{delete_script}">Delete</button>'
         pin_script = f"fetch('/pin_file/{safe_project_name}/{file}/{true_access_code}', {{ method: 'POST' }}).then(() => window.location.reload())"
         pin_button = f'<button onClick="{pin_script}">Pin</button>'
+        if safe_project_name in pinned_files and pinned_files[safe_project_name] == os.path.join(safe_project_name, file):
+            pin_script = ""
+            pin_button = ""
         return f'<li>{link_part}{delete_button}{pin_button}</li>'
 
     safe_project_name = sanatize_path(project_name)
@@ -132,7 +135,7 @@ async def pin_file(project_name: str, file_name: str, access_code: str):
         file_path = os.path.join(safe_project_name, safe_file_name)
 
         if os.path.isfile(file_path):
-            pinned_files[project_name] = file_path
+            pinned_files[safe_project_name] = file_path
             return gen_resp_message("File pinned successfully")
         else:
             return gen_resp_message("File not found")
